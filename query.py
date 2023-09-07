@@ -15,6 +15,7 @@ class Query:
         self.key_positions = self.load_key_positions()
         self.index_file = '../final_index_files/full_index.txt'
         self.stopWords = set(stopwords.words('english'))
+        
     def loadURL(self)->dict:
         """
         Loads the urls into a dict where the key is the docid.
@@ -124,88 +125,89 @@ class Query:
         and then sorts them so that the 5 best matching pages
         are printed out.
         """
-        response = str(input("Type in your Query: ")) # get user input
-        start_time = time.time() #start timer
-        #queryList = [word for word in queryList if not word in self.stopWords]
-        queryList = InvertedIndex.processText(self, response) #processing text, put terms in list
-        queryList = [word for word in queryList if word not in self.stopWords]
-        data = self.get_termsDict(queryList) #get postings for terms
+        while True:
+            response = str(input("Type in your Query: ")) # get user input
+            start_time = time.time() #start timer
+            #queryList = [word for word in queryList if not word in self.stopWords]
+            queryList = InvertedIndex.processText(self, response) #processing text, put terms in list
+            queryList = [word for word in queryList if word not in self.stopWords]
+            data = self.get_termsDict(queryList) #get postings for terms
 
-        #calculating weight for query
-        queryTerms = {}
-        for term in queryList:
-            queryTermCount = queryList.count(term) 
-            qTF = 1 + math.log(queryTermCount)
-            qIDF = self.get_idf(data, term)
-            qWeight = qTF * qIDF
-            if term not in queryTerms and qWeight != 0:
-                queryTerms[term] = qWeight
+            #calculating weight for query
+            queryTerms = {}
+            for term in queryList:
+                queryTermCount = queryList.count(term) 
+                qTF = 1 + math.log(queryTermCount)
+                qIDF = self.get_idf(data, term)
+                qWeight = qTF * qIDF
+                if term not in queryTerms and qWeight != 0:
+                    queryTerms[term] = qWeight
 
-        #normalizing
-        avgQLength = 0
-        for key, value in queryTerms.items():
-            avgQLength += value ** 2
+            #normalizing
+            avgQLength = 0
+            for key, value in queryTerms.items():
+                avgQLength += value ** 2
 
-        avgQLength = math.sqrt(avgQLength)
+            avgQLength = math.sqrt(avgQLength)
 
-        for key, value in queryTerms.items():
-            queryTerms[key] = value / avgQLength
+            for key, value in queryTerms.items():
+                queryTerms[key] = value / avgQLength
 
-        #only calculatinf cosine similarity for docs with at least one query term
-        docsToCalc = set()
-        for term in queryTerms.keys():
-            termfreq = self.get_docIDs(data, term)
-            docsToCalc.update(termfreq)
+            #only calculating cosine similarity for docs with at least one query term
+            docsToCalc = set()
+            for term in queryTerms.keys():
+                termfreq = self.get_docIDs(data, term)
+                docsToCalc.update(termfreq)
 
-        #calculating weight for documents
-        scores = {}
-        for doc in docsToCalc: #document at a time
-            docTotalScore = 0
-            avgDocLength = 0
+            #calculating weight for documents
+            scores = {}
+            for doc in docsToCalc: #document at a time
+                docTotalScore = 0
+                avgDocLength = 0
 
-            for term in queryTerms:
-                if doc not in data[term]: #check if current term is in this document
-                    termCount = 0
-                else:
-                    termCount = data[term][doc] #if it is, get count
-                avgDocLength += termCount ** 2 
-            avgDocLength = math.sqrt(avgDocLength) #get avg doc length for this document
+                for term in queryTerms:
+                    if doc not in data[term]: #check if current term is in this document
+                        termCount = 0
+                    else:
+                        termCount = data[term][doc] #if it is, get count
+                    avgDocLength += termCount ** 2 
+                avgDocLength = math.sqrt(avgDocLength) #get avg doc length for this document
 
-            for term, weight in queryTerms.items():
-                if doc not in data[term]: 
-                    counts = 0
-                else:
-                    counts = data[term][doc]
-                if counts != 0:
-                    docWeight = 1 + math.log(counts) #get weighted tf
-                else:
-                    docWeight = 0
-                docWeight = docWeight / avgDocLength  # normalizing
+                for term, weight in queryTerms.items():
+                    if doc not in data[term]: 
+                        counts = 0
+                    else:
+                        counts = data[term][doc]
+                    if counts != 0:
+                        docWeight = 1 + math.log(counts) #get weighted tf
+                    else:
+                        docWeight = 0
+                    docWeight = docWeight / avgDocLength  # normalizing
 
-                termDocScore = docWeight * weight # get weight for this term for this doc
-                
-                #check if term is an important term within this document
-                if term in self.important_terms:
-                    if doc in self.important_terms[term]:
-                        termDocScore += 1
+                    termDocScore = docWeight * weight # get weight for this term for this doc
+                    
+                    #check if term is an important term within this document
+                    if term in self.important_terms:
+                        if doc in self.important_terms[term]:
+                            termDocScore += 1
 
-                docTotalScore += termDocScore #add this terms score to the doc's total score
+                    docTotalScore += termDocScore #add this terms score to the doc's total score
 
-            scores[doc] = docTotalScore # add to dict containing docId and its weight
+                scores[doc] = docTotalScore # add to dict containing docId and its weight
 
-        #sort so best matches are first
-        scores = dict((sorted(scores.items(), key = lambda x: x[1], reverse = True)))
-        scores = list(scores.keys()) #get ordered list of best matches
-        scores = scores[:5] #get 5 best matches
+            #sort so best matches are first
+            scores = dict((sorted(scores.items(), key = lambda x: x[1], reverse = True)))
+            scores = list(scores.keys()) #get ordered list of best matches
+            scores = scores[:5] #get 5 best matches
 
-        for dID in scores:
-            print(self.urls[int(dID)]) #print results to user
+            for dID in scores:
+                print(self.urls[int(dID)]) #print results to user
 
-        end_time = time.time()
-        time_diff = end_time - start_time
-        execution_time = time_diff * 1000
-        print()
-        print(str(execution_time))    #print time in milliseconds
+            end_time = time.time()
+            time_diff = end_time - start_time
+            execution_time = time_diff * 1000
+            print()
+            print(str(execution_time))    #print time in milliseconds
 
 
 if __name__ == '__main__':
