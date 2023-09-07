@@ -12,28 +12,3 @@ def tokenize(text):
         if token != '' and token.isascii() == True:
             text_words.append(token)  # Adds to list
     return text_words
-
-def stopWords():
-    """
-    Creates a set of stop words from stopwords.txt
-    :return: set - stopwords
-    """
-    stopwords = set()
-    with open("stopwords.txt") as file:
-        lines = file.readlines()
-        for line in lines:
-            line = line.strip()
-            if line is not None:
-                stopwords.add(line)
-    return stopwords
-    
-def searchInvertedIndex(word):
-    with open("pointerIndex.txt",'r') as file:
-        pointerIndex = json.load(file)
-        if word in pointerIndex:
-            pointerNum = pointerIndex[word][0]
-            with open("invertedIndex.txt",'r') as invertedFile:
-                invertedFile.seek(pointerNum)
-                return json.loads(invertedFile.readline())
-        else:
-            print("Word not found")
