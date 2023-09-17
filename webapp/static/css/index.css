@@ -1,0 +1,32 @@
+body {
+    box-sizing: border-box;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: lightblue;
+    font-family: monospace;
+    align-items: center;
+    justify-content: top;
+    gap: 50px;
+}
+
+
+.header {
+    color: white;
+    font-size: 68px;
+}
+
+.image {
+    width: 350px;
+    height: 250px;
+}
+
+input {
+    border-radius: 25px;
+    width: 561px;
+    height: 44px;
+    border: none;
+    font-size: large;
+    padding-left: 10px;
+}
