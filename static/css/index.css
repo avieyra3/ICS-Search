@@ -20,6 +20,7 @@ body {
 .image {
     width: 350px;
     height: 250px;
+    border-radius: 50px;
 }
 
 input {
@@ -29,4 +30,9 @@ input {
     border: none;
     font-size: large;
     padding-left: 10px;
+}
+
+li {
+    font-size: 26px;
+    margin: 20px;
 }

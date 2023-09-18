@@ -7,9 +7,9 @@ import math
 import time
 from nltk.corpus import stopwords
 
+
 class Query:
     def __init__(self):
-        #funself.stopWords = stopwords.txt
         self.urls = self.loadURL()
         self.important_terms = self.load_important_terms()
         self.key_positions = self.load_key_positions()
@@ -119,13 +119,12 @@ class Query:
         term_docIds = set(termDict[term].keys())
         return term_docIds
 
-    def Run(self):
+    def run(self, response: str):
         """
         This calculates the weights for the query and documents 
         and then sorts them so that the 5 best matching pages
         are printed out.
         """
-        response = str(input("Type in your Query: ")) # get user input
         start_time = time.time() #start timer
         queryList = InvertedIndex.processText(self, response) #processing text, put terms in list
         queryList = [word for word in queryList if word not in self.stopWords]
@@ -197,17 +196,13 @@ class Query:
         scores = dict((sorted(scores.items(), key = lambda x: x[1], reverse = True)))
         scores = list(scores.keys()) #get ordered list of best matches
         scores = scores[:5] #get 5 best matches
+        links: list = []
 
         for dID in scores:
-            print(self.urls[int(dID)]) #print results to user
+            links.append(self.urls[int(dID)]) #print results to user
 
         end_time = time.time()
         time_diff = end_time - start_time
         execution_time = time_diff * 1000
         print(str(execution_time))    #print time in milliseconds
-
-
-if __name__ == '__main__':
-    query = Query()
-    while True:
-        query.Run()
+        return links
