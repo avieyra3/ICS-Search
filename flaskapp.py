@@ -12,7 +12,7 @@ def search():
     data: dict = request.get_json()
     userText: str = data['search']
     query = Query()
-    result: dict = query.run(userText)
+    result: list = query.run(userText)
     return result
 
 if __name__ == "__main__":
