@@ -22,8 +22,10 @@ class InvertedIndex:
 
     def readFile(self, path: str):
         """
-        :param path: string - file paths to open from directory
-        :return soup.get_text(): string - content left from removing the html
+        readFile method reads the file and returns the content of the file
+        :param path: string - file paths to directory
+        :return text: string - content of the file, url: string - url of the file, 
+        importantText: string - content of the file that is deemed important
         """
         with open(path, 'r') as f:
             importantText = ''
@@ -48,9 +50,10 @@ class InvertedIndex:
 
     def processText(self, text: str)->list:
         """
-        processText method tokenizes text taken from the readFile method and returns the list of tokens
-        :param text: string
-        :return: list
+        processText method tokenizes the text and returns a list of tokens. 
+        It also stems the words.
+        :param text: string - content of the file
+        :return: list - list of tokens
         """
         wordList = helpers.tokenize(text) #tokenizes the text
         ps = PorterStemmer()
@@ -59,12 +62,10 @@ class InvertedIndex:
 
     def wordPostings(self, index: dict, textList: list)->None:
         """
-        This function creates a wordposting as the value of the term
-        where the term is the key. A wordposting is a dictionary whose
-        keys correspond to the current docID. The values themselves 
-        is a list whose first element is the frequency.
-        param: list of tokenized words
-        return: a dict of all the terms and their postings
+        wordPostings method records the frequency of the words in the document 
+        and updates the inverted index accordingly.
+        :param: index: dict - inverted index, textList: list - list of tokens
+        :return: None
         """
         for i in range(len(textList)):
             if textList[i] not in index:
@@ -75,9 +76,11 @@ class InvertedIndex:
 
     def build_pre_partial_index(self, wordposts: dict, url: str):
         """
-        creates an inverted index of the document that is passed in and updates the document id index(URL dict)
-        :param textList: content of the passed in document
-        :return: dict - dictionary of words and the amount of times they appear in a document
+        creates an inverted index of the document that is passed in and updates the 
+        document id index(URL dict)
+        :param: wordposts: dict - dictionary of words and the amount of times they appear in a document, 
+        url: string - url of the document
+        :return: None
         """
         for word in wordposts:
             path = self.path[word[0]]
@@ -86,11 +89,12 @@ class InvertedIndex:
 
     def alphaToPath(self)->None:
         """
-        Func: modifies the self.path dict so that it maps the first 
-        lowers case letter to a file name that is equal to the same
-        letter.
-        param: None
-        return: None
+        alphaToPath method maps the letters of the alphabet to the path of the pickle 
+        files that contain the inverted index of the words that start with that
+        letter. It also maps the numbers to the path of the pickle file that contains 
+        the inverted index of the numbers.
+        :param: None
+        :return: None
         """
         for i in range(26):
             letter = str(chr(ord('a') + i))
@@ -100,25 +104,24 @@ class InvertedIndex:
 
     def docIndex(self):
         """
-        Getter function for document indexes
-        :return: dict
+        docIndex method returns the document id index
+        :return: dict - document id index
         """
         return self.urlDict
 
     def store(self, content, fileName):
         """
-                Stores the inverted index/urlDict into a pickle file
-                :param freqDict: dict
-                :return: none
-                """
+        Stores the content into a pickle file
+        :param: content: the content to be stored, fileName: the name of the file
+        :return: none
+        """
         with open(fileName, 'wb') as file:
             pickle.dump(content,file, protocol= pickle.HIGHEST_PROTOCOL)
 
     def store_important_text(self,importantText: list)->None:
         """
-        Stores, in memory, a data member important_terms. This is a 
-        dict whose keys are words and the values is a set of docID's
-        param: a list of the text deemed important
+        Stores the important text into a dict - important_terms 
+        :param: importantText: list of important text
         return: None
         """
         for word in importantText:
@@ -129,9 +132,8 @@ class InvertedIndex:
     
     def sort_files(self, directory: str)->None:
         """
-        Goes through loads a file into a dict - terms.
-        One file at a time.
-        param: path directory leading to the files
+        Sorts the files in the directory. 
+        :param: directory: the directory of the files to be sorted
         return: None
         """
         for filename in os.listdir(directory):
@@ -154,9 +156,8 @@ class InvertedIndex:
 
     def store_into_index(self, index_file: str, pindex: dict)->None:
         """
-        Stores the dict in the index, line by line and keeps record
-        of the location into a data member key_positions
-        param: a data member file, a dict
+        Stores the partial index into the index file. 
+        :param: index_file: the index file to be stored into, pindex: the partial index
         return: None
         """
         with open(index_file, 'a') as file:
@@ -167,7 +168,9 @@ class InvertedIndex:
     
     def Run(self):
         """
-        The return method handles the main logic of this program
+        Run method traverses the DEV directory and creates an inverted index of the files stored. 
+        It also creates a document id index and stores it in a pickle file.
+        :param: None
         :return: None
         """
         #assuming the DEV folder is in the same directory as the code
